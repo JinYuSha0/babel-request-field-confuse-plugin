@@ -68,7 +68,7 @@ function default_1(_a, opt) {
             if (!opt.srcPath || !opt.requestMethodFile)
                 throw new Error('params error');
             opt.requestMethodFile = Helper.removeFileExtname(opt.requestMethodFile);
-            var ignore = file.opts.filename.startsWith(opt.srcPath);
+            var ignore = !file.opts.filename.startsWith(opt.srcPath);
             if (!ignore) {
                 opt.blackPath.forEach(function (path) {
                     if (file.opts.filename.startsWith(path)) {
@@ -87,15 +87,16 @@ function default_1(_a, opt) {
         },
         visitor: {
             ImportDeclaration: function (path, state) {
-                if (this.ignorePath &&
-                    Helper.getImportPath(path, state) === opt.requestMethodFile &&
+                if (this.ignorePath)
+                    return;
+                if (Helper.getImportPath(path, state) === opt.requestMethodFile &&
                     path.node.specifiers[0].type === 'ImportDefaultSpecifier') {
                     this.calleeObjIdentifierName = path.node.specifiers[0].local.name;
                 }
             },
             CallExpression: function (path, state) {
                 var _a, _b, _c;
-                if (!this.ignorePath)
+                if (this.ignorePath)
                     return;
                 if (!!this.calleeObjIdentifierName &&
                     ((_b = (_a = path.node.callee) === null || _a === void 0 ? void 0 : _a.object) === null || _b === void 0 ? void 0 : _b.name) ===
@@ -129,7 +130,7 @@ function default_1(_a, opt) {
             },
             ObjectExpression: function (path, state) {
                 var _this = this;
-                if (!this.ignorePath)
+                if (this.ignorePath)
                     return;
                 path.node.properties.forEach(function (e, i) {
                     var result = _this.detectIsProcessProperty(e);
@@ -141,7 +142,7 @@ function default_1(_a, opt) {
             },
             MemberExpression: function (path) {
                 var _a;
-                if (!this.ignorePath)
+                if (this.ignorePath)
                     return;
                 if (((_a = opt.ignoreObjectName) === null || _a === void 0 ? void 0 : _a.length) > 0 &&
                     path.node.object.type === 'Identifier' &&
@@ -162,7 +163,7 @@ function default_1(_a, opt) {
                 }
             },
             JSXAttribute: function (path) {
-                if (!this.ignorePath)
+                if (this.ignorePath)
                     return;
                 if (path.node.name.name === 'name') {
                     if (path.node.value.type === 'StringLiteral') {
