@@ -171,6 +171,7 @@ export default function (
         }
       },
       JSXAttribute(path) {
+        if (!this.underSrc) return;
         if (path.node.name.name === 'name') {
           if (path.node.value.type === 'StringLiteral') {
             if (this.detectParam(path.node.value.value)) {
