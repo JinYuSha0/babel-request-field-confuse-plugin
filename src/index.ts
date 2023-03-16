@@ -169,6 +169,7 @@ export default function (
         }
         if (
           path.node.property.type === 'Identifier' &&
+          !path.node.computed &&
           this.detectParam(path.node.property.name)
         ) {
           path
