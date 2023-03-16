@@ -4,6 +4,7 @@ import * as Helper from './helper';
 
 interface InputParams {
   srcPath: string;
+  blackPath: string[];
   requestMethodFile: string;
   mappingPathFile: string;
   mappingParamFile: string;
@@ -22,7 +23,7 @@ type DetectIsProcessPropertyResult = {
 } | null;
 
 interface InnerAttribute {
-  underSrc: boolean;
+  ignorePath: boolean;
   mappingPath: Record<string, string>;
   mappingParam: Record<string, string>;
   detectParam: (name: string) => boolean;
@@ -64,7 +65,16 @@ export default function (
       if (!opt.srcPath || !opt.requestMethodFile)
         throw new Error('params error');
       opt.requestMethodFile = Helper.removeFileExtname(opt.requestMethodFile);
-      this.underSrc = file.opts.filename.startsWith(opt.srcPath);
+      let ignore = file.opts.filename.startsWith(opt.srcPath);
+      if (!ignore) {
+        opt.blackPath.forEach(path => {
+          if (file.opts.filename.startsWith(path)) {
+            ignore = true;
+            return;
+          }
+        });
+      }
+      this.ignorePath = ignore;
       this.calleeObjIdentifierName = '';
       this.mappingPath = Helper.analysePathMapping(
         Helper.readFile(opt.mappingPathFile)
@@ -79,7 +89,7 @@ export default function (
     visitor: {
       ImportDeclaration(path, state) {
         if (
-          this.underSrc &&
+          this.ignorePath &&
           Helper.getImportPath(path, state) === opt.requestMethodFile &&
           path.node.specifiers[0].type === 'ImportDefaultSpecifier'
         ) {
@@ -87,7 +97,7 @@ export default function (
         }
       },
       CallExpression(path, state) {
-        if (!this.underSrc) return;
+        if (!this.ignorePath) return;
         if (
           !!this.calleeObjIdentifierName &&
           (path.node.callee as any)?.object?.name ===
@@ -126,7 +136,7 @@ export default function (
         }
       },
       ObjectExpression(path, state) {
-        if (!this.underSrc) return;
+        if (!this.ignorePath) return;
         path.node.properties.forEach((e, i) => {
           const result = this.detectIsProcessProperty(e);
           if (!!result) {
@@ -137,7 +147,7 @@ export default function (
         });
       },
       MemberExpression(path) {
-        if (!this.underSrc) return;
+        if (!this.ignorePath) return;
         if (
           opt.ignoreObjectName?.length > 0 &&
           path.node.object.type === 'Identifier' &&
@@ -171,7 +181,7 @@ export default function (
         }
       },
       JSXAttribute(path) {
-        if (!this.underSrc) return;
+        if (!this.ignorePath) return;
         if (path.node.name.name === 'name') {
           if (path.node.value.type === 'StringLiteral') {
             if (this.detectParam(path.node.value.value)) {
