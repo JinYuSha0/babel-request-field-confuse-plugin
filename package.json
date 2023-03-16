@@ -2,7 +2,14 @@
   "name": "babel-request-field-confuse-plugin",
   "version": "1.0.0",
   "main": "dist/index.js",
+  "author": "Soul Shao <a1009943858@gmail.com> (https://github.com/JinYuSha0)",
   "license": "MIT",
+  "source": "src/index",
+  "files": [
+    "src",
+    "dist"
+  ],
+  "homepage": "https://github.com/JinYuSha0/babel-request-field-confuse-plugin",
   "devDependencies": {
     "@types/node": "^18.14.6",
     "tsc": "^2.0.4",

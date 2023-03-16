@@ -8,6 +8,7 @@ interface InputParams {
   mappingPathFile: string;
   mappingParamFile: string;
   formInstanceMethod: string[];
+  ignoreObjectName: string[];
 }
 
 type ObjectMember =
@@ -106,7 +107,7 @@ export default function (
           return;
         }
         if (
-          opt.formInstanceMethod.length > 0 &&
+          opt.formInstanceMethod?.length > 0 &&
           path.node.callee.type === 'MemberExpression' &&
           path.node.callee.property.type === 'Identifier' &&
           opt.formInstanceMethod.includes(path.node.callee.property.name) &&
@@ -137,6 +138,13 @@ export default function (
       },
       MemberExpression(path) {
         if (!this.underSrc) return;
+        if (
+          opt.ignoreObjectName?.length > 0 &&
+          path.node.object.type === 'Identifier' &&
+          opt.ignoreObjectName.includes(path.node.object.name)
+        ) {
+          return;
+        }
         if (
           path.node.property.type === 'StringLiteral' &&
           this.detectParam(path.node.property.value)
