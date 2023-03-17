@@ -10,6 +10,9 @@ interface InputParams {
   mappingParamFile: string;
   formInstanceMethod: string[];
   ignoreObjectName: string[];
+  detectIgnoreObject?: (
+    path: Babel.NodePath<Babel.types.ObjectExpression>
+  ) => boolean;
 }
 
 type ObjectMember =
@@ -35,6 +38,7 @@ function detectIsProcessProperty(
   e: ObjectMember
 ): DetectIsProcessPropertyResult {
   if (e.type === 'ObjectProperty') {
+    if (e.computed) return;
     const keyType = e.key.type;
     let key: string;
     let name: string;
@@ -137,6 +141,9 @@ export default function (
       },
       ObjectExpression(path, state) {
         if (this.ignorePath) return;
+        if (opt.detectIgnoreObject?.(path)) {
+          return;
+        }
         path.node.properties.forEach((e, i) => {
           const result = this.detectIsProcessProperty(e);
           if (!!result) {

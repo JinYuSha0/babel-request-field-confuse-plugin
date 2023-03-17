@@ -39,6 +39,8 @@ var Helper = __importStar(require("./helper"));
 function detectIsProcessProperty(e) {
     var _a;
     if (e.type === 'ObjectProperty') {
+        if (e.computed)
+            return;
         var keyType = e.key.type;
         var key = void 0;
         var name_1;
@@ -130,8 +132,12 @@ function default_1(_a, opt) {
             },
             ObjectExpression: function (path, state) {
                 var _this = this;
+                var _a;
                 if (this.ignorePath)
                     return;
+                if ((_a = opt.detectIgnoreObject) === null || _a === void 0 ? void 0 : _a.call(opt, path)) {
+                    return;
+                }
                 path.node.properties.forEach(function (e, i) {
                     var result = _this.detectIsProcessProperty(e);
                     if (!!result) {
