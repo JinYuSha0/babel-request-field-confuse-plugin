@@ -156,6 +156,7 @@ function default_1(_a, opt) {
                         .replaceWith(Babel.types.stringLiteral(this.getMappingParmaName(path.node.property.value)));
                 }
                 if (path.node.property.type === 'Identifier' &&
+                    !path.node.computed &&
                     this.detectParam(path.node.property.name)) {
                     path
                         .get('property')
