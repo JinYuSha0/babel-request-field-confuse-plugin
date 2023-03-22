@@ -172,7 +172,8 @@ function default_1(_a, opt) {
             JSXAttribute: function (path) {
                 if (this.ignorePath)
                     return;
-                if (path.node.name.name === 'name') {
+                if (typeof path.node.name.name === 'string' &&
+                    opt.JSXAttribute.includes(path.node.name.name)) {
                     if (path.node.value.type === 'StringLiteral') {
                         if (this.detectParam(path.node.value.value)) {
                             path

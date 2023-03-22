@@ -10,6 +10,7 @@ interface InputParams {
   mappingParamFile: string;
   formInstanceMethod: string[];
   ignoreObjectName: string[];
+  JSXAttribute: string[];
   detectIgnoreObject?: (
     path: Babel.NodePath<Babel.types.ObjectExpression>
   ) => boolean;
@@ -190,7 +191,10 @@ export default function (
       },
       JSXAttribute(path) {
         if (this.ignorePath) return;
-        if (path.node.name.name === 'name') {
+        if (
+          typeof path.node.name.name === 'string' &&
+          opt.JSXAttribute.includes(path.node.name.name)
+        ) {
           if (path.node.value.type === 'StringLiteral') {
             if (this.detectParam(path.node.value.value)) {
               path

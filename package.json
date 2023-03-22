@@ -1,6 +1,6 @@
 {
   "name": "babel-request-field-confuse-plugin",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "main": "dist/index.js",
   "author": "Soul Shao <a1009943858@gmail.com> (https://github.com/JinYuSha0)",
   "license": "MIT",
