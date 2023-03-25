@@ -129,6 +129,15 @@ function default_1(_a, opt) {
                     }
                     return;
                 }
+                if (path.node.callee.type === 'Identifier' &&
+                    opt.formInstanceMethod.includes(path.node.callee.name) &&
+                    path.node.arguments[0].type === 'StringLiteral') {
+                    if (this.detectParam(path.node.arguments[0].value)) {
+                        path
+                            .get('arguments')[0]
+                            .replaceWith(Babel.types.stringLiteral(this.getMappingParmaName(path.node.arguments[0].value)));
+                    }
+                }
             },
             ObjectExpression: function (path, state) {
                 var _this = this;

@@ -11,6 +11,7 @@ interface InputParams {
   formInstanceMethod: string[];
   ignoreObjectName: string[];
   JSXAttribute: string[];
+  transStrParamFunctionName: string[];
   detectIgnoreObject?: (
     path: Babel.NodePath<Babel.types.ObjectExpression>
   ) => boolean;
@@ -138,6 +139,21 @@ export default function (
               );
           }
           return;
+        }
+        if (
+          path.node.callee.type === 'Identifier' &&
+          opt.formInstanceMethod.includes(path.node.callee.name) &&
+          path.node.arguments[0].type === 'StringLiteral'
+        ) {
+          if (this.detectParam(path.node.arguments[0].value)) {
+            path
+              .get('arguments')[0]
+              .replaceWith(
+                Babel.types.stringLiteral(
+                  this.getMappingParmaName(path.node.arguments[0].value)
+                )
+              );
+          }
         }
       },
       ObjectExpression(path, state) {
