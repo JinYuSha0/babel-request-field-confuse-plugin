@@ -97,7 +97,7 @@ function default_1(_a, opt) {
                 }
             },
             CallExpression: function (path, state) {
-                var _a, _b, _c;
+                var _a, _b;
                 if (this.ignorePath)
                     return;
                 if (!!this.calleeObjIdentifierName &&
@@ -117,25 +117,30 @@ function default_1(_a, opt) {
                     }
                     return;
                 }
-                if (((_c = opt.formInstanceMethod) === null || _c === void 0 ? void 0 : _c.length) > 0 &&
-                    path.node.callee.type === 'MemberExpression' &&
+                if (path.node.callee.type === 'MemberExpression' &&
                     path.node.callee.property.type === 'Identifier' &&
-                    opt.formInstanceMethod.includes(path.node.callee.property.name) &&
-                    path.node.arguments[0].type === 'StringLiteral') {
-                    if (this.detectParam(path.node.arguments[0].value)) {
-                        path
-                            .get('arguments')[0]
-                            .replaceWith(Babel.types.stringLiteral(this.getMappingParmaName(path.node.arguments[0].value)));
+                    opt.formInstanceMethod[path.node.callee.property.name]) {
+                    var argumentList = opt.formInstanceMethod[path.node.callee.property.name];
+                    for (var i = 0; i < path.node.arguments.length; i++) {
+                        if (path.node.arguments[i].type === 'StringLiteral' &&
+                            this.detectParam(path.node.arguments[i].value) &&
+                            (argumentList.length === 0 || argumentList.includes(i))) {
+                            path
+                                .get('arguments')[i].replaceWith(Babel.types.stringLiteral(this.getMappingParmaName(path.node.arguments[i].value)));
+                        }
                     }
                     return;
                 }
                 if (path.node.callee.type === 'Identifier' &&
-                    opt.formInstanceMethod.includes(path.node.callee.name) &&
+                    opt.formInstanceMethod[path.node.callee.name] &&
                     path.node.arguments[0].type === 'StringLiteral') {
-                    if (this.detectParam(path.node.arguments[0].value)) {
-                        path
-                            .get('arguments')[0]
-                            .replaceWith(Babel.types.stringLiteral(this.getMappingParmaName(path.node.arguments[0].value)));
+                    var argumentList = opt.formInstanceMethod[path.node.callee.name];
+                    for (var i = 0; i < path.node.arguments.length; i++) {
+                        if (this.detectParam(path.node.arguments[i].value) &&
+                            (argumentList.includes(i) || argumentList.length === 0)) {
+                            path
+                                .get('arguments')[i].replaceWith(Babel.types.stringLiteral(this.getMappingParmaName(path.node.arguments[i].value)));
+                        }
                     }
                 }
             },

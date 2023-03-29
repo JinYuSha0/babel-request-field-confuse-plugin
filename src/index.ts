@@ -1,5 +1,6 @@
 import type { PluginObj, PluginPass } from '@babel/core';
 import * as Babel from '@babel/core';
+import { StringLiteral } from '@babel/types';
 import * as Helper from './helper';
 
 interface InputParams {
@@ -8,7 +9,7 @@ interface InputParams {
   requestMethodFile: string;
   mappingPathFile: string;
   mappingParamFile: string;
-  formInstanceMethod: string[];
+  formInstanceMethod: Record<string, number[]>;
   ignoreObjectName: string[];
   JSXAttribute: string[];
   transStrParamFunctionName: string[];
@@ -123,36 +124,56 @@ export default function (
           return;
         }
         if (
-          opt.formInstanceMethod?.length > 0 &&
           path.node.callee.type === 'MemberExpression' &&
           path.node.callee.property.type === 'Identifier' &&
-          opt.formInstanceMethod.includes(path.node.callee.property.name) &&
-          path.node.arguments[0].type === 'StringLiteral'
+          opt.formInstanceMethod[path.node.callee.property.name]
         ) {
-          if (this.detectParam(path.node.arguments[0].value)) {
-            path
-              .get('arguments')[0]
-              .replaceWith(
-                Babel.types.stringLiteral(
-                  this.getMappingParmaName(path.node.arguments[0].value)
-                )
-              );
+          const argumentList =
+            opt.formInstanceMethod[path.node.callee.property.name];
+          for (let i = 0; i < path.node.arguments.length; i++) {
+            if (
+              path.node.arguments[i].type === 'StringLiteral' &&
+              this.detectParam(
+                (path.node.arguments[i] as StringLiteral).value
+              ) &&
+              (argumentList.length === 0 || argumentList.includes(i))
+            ) {
+              path
+                .get('arguments')
+                [i].replaceWith(
+                  Babel.types.stringLiteral(
+                    this.getMappingParmaName(
+                      (path.node.arguments[i] as StringLiteral).value
+                    )
+                  )
+                );
+            }
           }
           return;
         }
         if (
           path.node.callee.type === 'Identifier' &&
-          opt.formInstanceMethod.includes(path.node.callee.name) &&
+          opt.formInstanceMethod[path.node.callee.name] &&
           path.node.arguments[0].type === 'StringLiteral'
         ) {
-          if (this.detectParam(path.node.arguments[0].value)) {
-            path
-              .get('arguments')[0]
-              .replaceWith(
-                Babel.types.stringLiteral(
-                  this.getMappingParmaName(path.node.arguments[0].value)
-                )
-              );
+          const argumentList = opt.formInstanceMethod[path.node.callee.name];
+          for (let i = 0; i < path.node.arguments.length; i++) {
+            if (
+              this.detectParam(
+                (path.node.arguments[i] as StringLiteral).value
+              ) &&
+              (argumentList.includes(i) || argumentList.length === 0)
+            ) {
+              path
+                .get('arguments')
+                [i].replaceWith(
+                  Babel.types.stringLiteral(
+                    this.getMappingParmaName(
+                      (path.node.arguments[i] as StringLiteral).value
+                    )
+                  )
+                );
+            }
           }
         }
       },
