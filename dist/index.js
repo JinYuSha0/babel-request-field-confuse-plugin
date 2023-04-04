@@ -33,7 +33,11 @@ var __importStar = (this && this.__importStar) || function (mod) {
     __setModuleDefault(result, mod);
     return result;
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
+var path_1 = __importDefault(require("path"));
 var Babel = __importStar(require("@babel/core"));
 var Helper = __importStar(require("./helper"));
 function detectIsProcessProperty(e) {
@@ -72,12 +76,17 @@ function default_1(_a, opt) {
             opt.requestMethodFile = Helper.removeFileExtname(opt.requestMethodFile);
             var ignore = !file.opts.filename.startsWith(opt.srcPath);
             if (!ignore) {
-                opt.blackPath.forEach(function (path) {
-                    if (file.opts.filename.startsWith(path)) {
-                        ignore = true;
-                        return;
-                    }
-                });
+                var relativePath_1 = file.opts.filename.replace(path_1.default.join(opt.srcPath, '../'), '/');
+                try {
+                    opt.blackPath.forEach(function (path) {
+                        if (relativePath_1 === path.replace(path_1.default.join(opt.srcPath, '../'), '')) {
+                            console.log("path: ".concat(relativePath_1, " ignore"));
+                            ignore = true;
+                            throw new Error();
+                        }
+                    });
+                }
+                catch (_) { }
             }
             this.ignorePath = ignore;
             this.calleeObjIdentifierName = '';
@@ -132,8 +141,7 @@ function default_1(_a, opt) {
                     return;
                 }
                 if (path.node.callee.type === 'Identifier' &&
-                    opt.formInstanceMethod[path.node.callee.name] &&
-                    path.node.arguments[0].type === 'StringLiteral') {
+                    opt.formInstanceMethod[path.node.callee.name]) {
                     var argumentList = opt.formInstanceMethod[path.node.callee.name];
                     for (var i = 0; i < path.node.arguments.length; i++) {
                         if (this.detectParam(path.node.arguments[i].value) &&

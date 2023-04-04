@@ -1,4 +1,5 @@
 import type { PluginObj, PluginPass } from '@babel/core';
+import Path from 'path';
 import * as Babel from '@babel/core';
 import { StringLiteral } from '@babel/types';
 import * as Helper from './helper';
@@ -74,12 +75,21 @@ export default function (
       opt.requestMethodFile = Helper.removeFileExtname(opt.requestMethodFile);
       let ignore = !file.opts.filename.startsWith(opt.srcPath);
       if (!ignore) {
-        opt.blackPath.forEach(path => {
-          if (file.opts.filename.startsWith(path)) {
-            ignore = true;
-            return;
-          }
-        });
+        const relativePath = file.opts.filename.replace(
+          Path.join(opt.srcPath, '../'),
+          '/'
+        );
+        try {
+          opt.blackPath.forEach(path => {
+            if (
+              relativePath === path.replace(Path.join(opt.srcPath, '../'), '')
+            ) {
+              console.log(`path: ${relativePath} ignore`);
+              ignore = true;
+              throw new Error();
+            }
+          });
+        } catch (_) {}
       }
       this.ignorePath = ignore;
       this.calleeObjIdentifierName = '';
@@ -153,8 +163,7 @@ export default function (
         }
         if (
           path.node.callee.type === 'Identifier' &&
-          opt.formInstanceMethod[path.node.callee.name] &&
-          path.node.arguments[0].type === 'StringLiteral'
+          opt.formInstanceMethod[path.node.callee.name]
         ) {
           const argumentList = opt.formInstanceMethod[path.node.callee.name];
           for (let i = 0; i < path.node.arguments.length; i++) {
