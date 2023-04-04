@@ -79,7 +79,7 @@ function default_1(_a, opt) {
                 var relativePath_1 = file.opts.filename.replace(path_1.default.join(opt.srcPath, '../'), '/');
                 try {
                     opt.blackPath.forEach(function (path) {
-                        if (relativePath_1 === path.replace(path_1.default.join(opt.srcPath, '../'), '')) {
+                        if (relativePath_1.startsWith(path.replace(path_1.default.join(opt.srcPath, '../'), ''))) {
                             console.log("path: ".concat(relativePath_1, " ignore"));
                             ignore = true;
                             throw new Error();

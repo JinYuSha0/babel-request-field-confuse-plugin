@@ -82,7 +82,9 @@ export default function (
         try {
           opt.blackPath.forEach(path => {
             if (
-              relativePath === path.replace(Path.join(opt.srcPath, '../'), '')
+              relativePath.startsWith(
+                path.replace(Path.join(opt.srcPath, '../'), '')
+              )
             ) {
               console.log(`path: ${relativePath} ignore`);
               ignore = true;
