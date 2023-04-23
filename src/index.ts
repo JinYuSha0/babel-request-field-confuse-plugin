@@ -269,6 +269,24 @@ export default function (
           }
         }
       },
+      ClassDeclaration(path) {
+        if (this.ignorePath) return;
+        path.node.body.body.forEach((ele, index) => {
+          if (
+            ele.type === 'ClassMethod' &&
+            ele.start &&
+            (ele.kind === 'get' || ele.kind === 'set') &&
+            ele.key.type === 'Identifier' &&
+            !!this.mappingParam[ele.key.name]
+          ) {
+            (
+              path.get('body').get('body')[index].get('key') as Babel.NodePath
+            ).replaceWith(
+              Babel.types.identifier(this.mappingParam[ele.key.name])
+            );
+          }
+        });
+      },
     },
   };
 }

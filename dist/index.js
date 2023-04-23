@@ -213,6 +213,20 @@ function default_1(_a, opt) {
                     }
                 }
             },
+            ClassDeclaration: function (path) {
+                var _this = this;
+                if (this.ignorePath)
+                    return;
+                path.node.body.body.forEach(function (ele, index) {
+                    if (ele.type === 'ClassMethod' &&
+                        ele.start &&
+                        (ele.kind === 'get' || ele.kind === 'set') &&
+                        ele.key.type === 'Identifier' &&
+                        !!_this.mappingParam[ele.key.name]) {
+                        path.get('body').get('body')[index].get('key').replaceWith(Babel.types.identifier(_this.mappingParam[ele.key.name]));
+                    }
+                });
+            },
         },
     };
 }
