@@ -253,18 +253,50 @@ export default function (
                   )
                 );
             }
-          } else if (
-            path.node.value.type === 'JSXExpressionContainer' &&
-            path.node.value.expression.type === 'StringLiteral'
-          ) {
-            if (this.detectParam(path.node.value.expression.value)) {
-              path
-                .get('value')
-                .replaceWith(
-                  Babel.types.stringLiteral(
-                    this.getMappingParmaName(path.node.value.expression.value)
-                  )
-                );
+          } else if (path.node.value.type === 'JSXExpressionContainer') {
+            if (path.node.value.expression.type === 'StringLiteral') {
+              if (this.detectParam(path.node.value.expression.value)) {
+                path
+                  .get('value')
+                  .replaceWith(
+                    Babel.types.stringLiteral(
+                      this.getMappingParmaName(path.node.value.expression.value)
+                    )
+                  );
+              }
+            } else if (
+              path.node.value.expression.type === 'ConditionalExpression'
+            ) {
+              if (
+                this.detectParam(
+                  (path.node.value.expression.consequent as any).value
+                )
+              ) {
+                (path.get('value').get('expression') as any)
+                  .get('consequent')
+                  .replaceWith(
+                    Babel.types.stringLiteral(
+                      this.getMappingParmaName(
+                        (path.node.value.expression.consequent as any).value
+                      )
+                    )
+                  );
+              }
+              if (
+                this.detectParam(
+                  (path.node.value.expression.alternate as any).value
+                )
+              ) {
+                (path.get('value').get('expression') as any)
+                  .get('alternate')
+                  .replaceWith(
+                    Babel.types.stringLiteral(
+                      this.getMappingParmaName(
+                        (path.node.value.expression.alternate as any).value
+                      )
+                    )
+                  );
+              }
             }
           }
         }

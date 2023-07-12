@@ -203,12 +203,25 @@ function default_1(_a, opt) {
                                 .replaceWith(Babel.types.stringLiteral(this.getMappingParmaName(path.node.value.value)));
                         }
                     }
-                    else if (path.node.value.type === 'JSXExpressionContainer' &&
-                        path.node.value.expression.type === 'StringLiteral') {
-                        if (this.detectParam(path.node.value.expression.value)) {
-                            path
-                                .get('value')
-                                .replaceWith(Babel.types.stringLiteral(this.getMappingParmaName(path.node.value.expression.value)));
+                    else if (path.node.value.type === 'JSXExpressionContainer') {
+                        if (path.node.value.expression.type === 'StringLiteral') {
+                            if (this.detectParam(path.node.value.expression.value)) {
+                                path
+                                    .get('value')
+                                    .replaceWith(Babel.types.stringLiteral(this.getMappingParmaName(path.node.value.expression.value)));
+                            }
+                        }
+                        else if (path.node.value.expression.type === 'ConditionalExpression') {
+                            if (this.detectParam(path.node.value.expression.consequent.value)) {
+                                path.get('value').get('expression')
+                                    .get('consequent')
+                                    .replaceWith(Babel.types.stringLiteral(this.getMappingParmaName(path.node.value.expression.consequent.value)));
+                            }
+                            if (this.detectParam(path.node.value.expression.alternate.value)) {
+                                path.get('value').get('expression')
+                                    .get('alternate')
+                                    .replaceWith(Babel.types.stringLiteral(this.getMappingParmaName(path.node.value.expression.alternate.value)));
+                            }
                         }
                     }
                 }
