@@ -1,8 +1,8 @@
 import type { PluginObj, PluginPass } from '@babel/core';
 import Path from 'path';
 import * as Babel from '@babel/core';
-import { StringLiteral } from '@babel/types';
 import * as Helper from './helper';
+import { StringLiteral } from '@babel/types';
 
 interface InputParams {
   srcPath: string;
@@ -14,6 +14,7 @@ interface InputParams {
   ignoreObjectName: string[];
   JSXAttribute: string[];
   transStrParamFunctionName: string[];
+  transMethod: string[];
   detectIgnoreObject?: (
     path: Babel.NodePath<Babel.types.ObjectExpression>
   ) => boolean;
@@ -186,6 +187,21 @@ export default function (
                 );
             }
           }
+        }
+        if (
+          path.node.callee.type === 'Identifier' &&
+          path.node.arguments.length > 0 &&
+          path.node.arguments[0].type === 'StringLiteral' &&
+          opt.transMethod?.includes(path.node.callee.name)
+        ) {
+          path
+            .get('arguments')[0]
+            .replaceWith(
+              Babel.types.stringLiteral(
+                this.getMappingParmaName(path.node.arguments[0].value) ??
+                  path.node.arguments[0].value
+              )
+            );
         }
       },
       ObjectExpression(path, state) {

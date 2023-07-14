@@ -106,7 +106,7 @@ function default_1(_a, opt) {
                 }
             },
             CallExpression: function (path, state) {
-                var _a, _b;
+                var _a, _b, _c, _d;
                 if (this.ignorePath)
                     return;
                 if (!!this.calleeObjIdentifierName &&
@@ -150,6 +150,14 @@ function default_1(_a, opt) {
                                 .get('arguments')[i].replaceWith(Babel.types.stringLiteral(this.getMappingParmaName(path.node.arguments[i].value)));
                         }
                     }
+                }
+                if (path.node.callee.type === 'Identifier' &&
+                    path.node.arguments.length > 0 &&
+                    path.node.arguments[0].type === 'StringLiteral' &&
+                    ((_c = opt.transMethod) === null || _c === void 0 ? void 0 : _c.includes(path.node.callee.name))) {
+                    path
+                        .get('arguments')[0]
+                        .replaceWith(Babel.types.stringLiteral((_d = this.getMappingParmaName(path.node.arguments[0].value)) !== null && _d !== void 0 ? _d : path.node.arguments[0].value));
                 }
             },
             ObjectExpression: function (path, state) {
